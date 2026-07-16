@@ -11,6 +11,15 @@
 python -m browser_agent_cookie_scope_risk_auditor_20260716 examples/cookies.json
 ```
 
+## 策略模式
+使用 `--allow-domain` 指定允许交给浏览器 Agent 的域名；可以重复传多个域名。CI 中可加 `--strict`，当发现高风险 Cookie 时以退出码 `2` 失败。
+
+```bash
+python -m browser_agent_cookie_scope_risk_auditor_20260716 examples/cookies.json --allow-domain example.com --strict
+```
+
+JSON 报告现在包含 `flag_counts`，会统计过期 Cookie 和域名白名单外 Cookie。
+
 ## 示例
 输入 cookie JSON，输出宽域名、非 HttpOnly、弱 SameSite 等风险。
 

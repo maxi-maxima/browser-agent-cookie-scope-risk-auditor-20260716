@@ -12,6 +12,15 @@ python -m browser_agent_cookie_scope_risk_auditor_20260716 --help
 python -m browser_agent_cookie_scope_risk_auditor_20260716 examples/cookies.json
 ```
 
+## Policy mode
+Use `--allow-domain` to flag cookies outside the domains you expect to share with the browser agent. Repeat it for multiple domains. Add `--strict` in CI to exit with code `2` when high-risk cookies are present.
+
+```bash
+python -m browser_agent_cookie_scope_risk_auditor_20260716 examples/cookies.json --allow-domain example.com --strict
+```
+
+The JSON report now includes `flag_counts`, including expired cookies and outside-allowlist cookies.
+
 ## Example
 ```bash
 python -m browser_agent_cookie_scope_risk_auditor_20260716 examples/cookies.json
