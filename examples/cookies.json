@@ -1,0 +1,16 @@
+[
+  {
+    "name": "session_token",
+    "domain": ".example.com",
+    "httpOnly": false,
+    "secure": true,
+    "sameSite": "None"
+  },
+  {
+    "name": "prefs",
+    "domain": "app.example.com",
+    "httpOnly": true,
+    "secure": true,
+    "sameSite": "Lax"
+  }
+]
