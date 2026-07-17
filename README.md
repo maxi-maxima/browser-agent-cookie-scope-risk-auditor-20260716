@@ -19,7 +19,14 @@ Use `--allow-domain` to flag cookies outside the domains you expect to share wit
 python -m browser_agent_cookie_scope_risk_auditor_20260716 examples/cookies.json --allow-domain example.com --strict
 ```
 
-The JSON report now includes `flag_counts`, including expired cookies and outside-allowlist cookies.
+The JSON report includes `flag_counts`, expired cookies, outside-allowlist cookies, and each risky cookie's source array `index`.
+
+## Output formats
+`--format json` remains the default for automation. Use `--format text` for compact local review, or `--format github-annotations` in GitHub Actions to emit `::error` / `::warning` lines for risky cookies.
+
+```bash
+python -m browser_agent_cookie_scope_risk_auditor_20260716 examples/cookies.json --format github-annotations
+```
 
 ## Example
 ```bash

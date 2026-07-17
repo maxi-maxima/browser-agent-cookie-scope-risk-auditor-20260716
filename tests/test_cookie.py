@@ -1,5 +1,7 @@
+import io
 import unittest
-from browser_agent_cookie_scope_risk_auditor_20260716.__main__ import audit
+from contextlib import redirect_stdout
+from browser_agent_cookie_scope_risk_auditor_20260716.__main__ import audit, main
 
 
 class T(unittest.TestCase):
@@ -23,6 +25,7 @@ class T(unittest.TestCase):
         self.assertEqual(result["flag_counts"]["outside-allowlist"], 1)
         self.assertEqual(result["flag_counts"]["expired"], 1)
         self.assertEqual(result["risks"][0]["severity"], "high")
+        self.assertEqual(result["risks"][0]["index"], 0)
 
     def test_subdomain_allowlist_match(self):
         result = audit(
@@ -30,6 +33,21 @@ class T(unittest.TestCase):
             allowed_domains=["example.com"],
         )
         self.assertEqual(result["flag_counts"]["outside-allowlist"], 0)
+
+    def test_github_annotations_format(self):
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            main(["examples/cookies.json", "--format", "github-annotations"])
+        output = buf.getvalue()
+        self.assertIn("::error", output)
+        self.assertIn("session_token", output)
+        self.assertIn("cookie #0", output)
+
+    def test_text_format(self):
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            main(["examples/cookies.json", "--format", "text"])
+        self.assertIn("risky cookies", buf.getvalue())
 
 
 if __name__ == "__main__":

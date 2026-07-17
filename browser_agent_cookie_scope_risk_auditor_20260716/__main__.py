@@ -41,7 +41,7 @@ def audit(cookies, allowed_domains: Iterable[str] | None = None):
         "expired": 0,
         "outside-allowlist": 0,
     }
-    for c in cookies:
+    for index, c in enumerate(cookies):
         name = c.get("name", "")
         dom = c.get("domain", "")
         flags = []
@@ -65,7 +65,7 @@ def audit(cookies, allowed_domains: Iterable[str] | None = None):
             severity = "high" if "auth-like-name" in flags and len(set(flags) - {"expired"}) > 1 else "medium"
             if "outside-allowlist" in flags or ("expired" in flags and "auth-like-name" in flags):
                 severity = "high"
-            risks.append({"name": name, "domain": dom, "flags": flags, "severity": severity})
+            risks.append({"index": index, "name": name, "domain": dom, "flags": flags, "severity": severity})
     return {"cookie_count": len(cookies), "risky_count": len(risks), "flag_counts": summary, "risks": risks}
 
 
@@ -75,14 +75,38 @@ def load_cookies(path: str):
     return data if isinstance(data, list) else data.get("cookies", [])
 
 
+def render_text(report: dict[str, Any]) -> str:
+    lines = [f"{report['risky_count']} risky cookies out of {report['cookie_count']} checked"]
+    for risk in report["risks"]:
+        flags = ",".join(risk["flags"])
+        lines.append(f"- #{risk['index']} {risk['severity'].upper()} {risk['name']}@{risk['domain']}: {flags}")
+    return "\n".join(lines)
+
+
+def render_github_annotations(report: dict[str, Any]) -> str:
+    lines = []
+    for risk in report["risks"]:
+        command = "error" if risk["severity"] == "high" else "warning"
+        title = f"{risk['severity']} cookie risk: {risk['name']}"
+        message = f"cookie #{risk['index']} {risk['name']}@{risk['domain']} flags={','.join(risk['flags'])}"
+        lines.append(f"::{command} title={title}::{message}")
+    return "\n".join(lines) or "::notice title=Cookie audit::No risky cookies found"
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description="Audit browser-agent cookie exports before sharing them with automation or LLM agents.")
     ap.add_argument("cookies_json")
     ap.add_argument("--allow-domain", action="append", default=[], help="Allowed eTLD+1/domain; repeat to flag cookies outside policy")
     ap.add_argument("--strict", action="store_true", help="Exit 2 when high-risk cookies are found")
+    ap.add_argument("--format", choices=("json", "text", "github-annotations"), default="json", help="Output format for local review or CI annotations")
     ns = ap.parse_args(argv)
     out = audit(load_cookies(ns.cookies_json), ns.allow_domain)
-    print(json.dumps(out, indent=2, ensure_ascii=False))
+    if ns.format == "json":
+        print(json.dumps(out, indent=2, ensure_ascii=False))
+    elif ns.format == "text":
+        print(render_text(out))
+    else:
+        print(render_github_annotations(out))
     if ns.strict and any(r["severity"] == "high" for r in out["risks"]):
         raise SystemExit(2)
 

@@ -18,7 +18,14 @@ python -m browser_agent_cookie_scope_risk_auditor_20260716 examples/cookies.json
 python -m browser_agent_cookie_scope_risk_auditor_20260716 examples/cookies.json --allow-domain example.com --strict
 ```
 
-JSON 报告现在包含 `flag_counts`，会统计过期 Cookie 和域名白名单外 Cookie。
+JSON 报告包含 `flag_counts`，会统计过期 Cookie、域名白名单外 Cookie，并给每条风险 Cookie 标出源数组 `index`。
+
+## 输出格式
+默认 `--format json` 适合自动化；`--format text` 适合本地快速查看；`--format github-annotations` 会输出 GitHub Actions 可识别的 `::error` / `::warning` 注解。
+
+```bash
+python -m browser_agent_cookie_scope_risk_auditor_20260716 examples/cookies.json --format github-annotations
+```
 
 ## 示例
 输入 cookie JSON，输出宽域名、非 HttpOnly、弱 SameSite 等风险。
